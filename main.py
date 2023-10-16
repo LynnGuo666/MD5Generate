@@ -1,6 +1,6 @@
 import os
 import hashlib
-
+from tqdm import tqdm
 
 def calculate_md5(file_path, block_size=8192):
     md5 = hashlib.md5()
@@ -9,10 +9,11 @@ def calculate_md5(file_path, block_size=8192):
             md5.update(chunk)
     return md5.hexdigest()
 
-
 def generate_file_list_with_md5(directory, use_absolute_path):
     result = []
-    for root, dirs, files in os.walk(directory):
+    total_files = sum([len(files) for _, _, files in os.walk(directory)])
+
+    for root, dirs, files in tqdm(os.walk(directory), total=total_files, desc='Generating MD5'):
         for file in files:
             file_path = os.path.join(root, file)
             md5 = calculate_md5(file_path)
@@ -24,12 +25,10 @@ def generate_file_list_with_md5(directory, use_absolute_path):
                 result.append(f'{os.path.relpath(file_path, directory)} [MD5: {md5}]')
     return result
 
-
 def save_to_txt(file_list, output_file):
     with open(output_file, 'w') as f:
         for item in file_list:
             f.write("%s\n" % item)
-
 
 def main():
     # 获取用户输入的文件夹目录
@@ -46,7 +45,6 @@ def main():
     save_to_txt(file_list_with_md5, output_file)
 
     print(f"文件列表及MD5值已保存到 {output_file}")
-
 
 if __name__ == "__main__":
     main()
