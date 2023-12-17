@@ -26,9 +26,10 @@ def generate_file_list_with_md5(directory, use_absolute_path):
     return result
 
 def save_to_txt(file_list, output_file):
-    with open(output_file, 'w') as f:
+    with open(output_file, 'w', encoding='utf-8') as f:
         for item in file_list:
             f.write("%s\n" % item)
+
 
 def main():
     # 获取用户输入的文件夹目录
