@@ -1,6 +1,7 @@
 import os
 import hashlib
 from tqdm import tqdm
+import json  # Import the json module
 
 def calculate_md5(file_path, block_size=8192):
     md5 = hashlib.md5()
@@ -17,12 +18,13 @@ def generate_file_list_with_md5(directory, use_absolute_path):
         for file in files:
             file_path = os.path.join(root, file)
             md5 = calculate_md5(file_path)
+            size = os.path.getsize(file_path)
 
             # 根据用户选择生成绝对路径或相对路径
             if use_absolute_path:
-                result.append(f'{file_path} [MD5: {md5}]')
+                result.append({"file": file_path, "md5": md5, "size": size})
             else:
-                result.append(f'{os.path.relpath(file_path, directory)} [MD5: {md5}]')
+                result.append({"file": os.path.relpath(file_path, directory), "md5": md5, "size": size})
     return result
 
 def save_to_txt(file_list, output_file):
@@ -30,6 +32,10 @@ def save_to_txt(file_list, output_file):
         for item in file_list:
             f.write("%s\n" % item)
 
+def save_to_json(file_list, output_file):
+    json_data = {"files": file_list}
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(json_data, f, indent=2)
 
 def main():
     # 获取用户输入的文件夹目录
@@ -38,12 +44,18 @@ def main():
     # 询问用户是否生成绝对路径
     use_absolute_path = input("生成绝对路径(A)还是相对路径(R)？ (A/R): ").upper() == "A"
 
+    # 询问用户选择生成JSON还是TXT
+    output_format = input("生成文件格式 (JSON/TXT): ").upper()
+
     # 生成文件列表及MD5值
     file_list_with_md5 = generate_file_list_with_md5(directory, use_absolute_path)
 
-    # 保存到文本文件
-    output_file = "output.txt"
-    save_to_txt(file_list_with_md5, output_file)
+    # 保存到相应格式的文件
+    output_file = "output." + output_format.lower()
+    if output_format == "JSON":
+        save_to_json(file_list_with_md5, output_file)
+    elif output_format == "TXT":
+        save_to_txt(file_list_with_md5, output_file)
 
     print(f"文件列表及MD5值已保存到 {output_file}")
 
