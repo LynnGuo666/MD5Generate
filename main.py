@@ -3,6 +3,9 @@ import hashlib
 from tqdm import tqdm
 import json  # Import the json module
 
+import getopt
+import sys
+
 def calculate_md5(file_path, block_size=8192):
     md5 = hashlib.md5()
     with open(file_path, 'rb') as f:
@@ -38,14 +41,34 @@ def save_to_json(file_list, output_file):
         json.dump(json_data, f, indent=2)
 
 def main():
-    # 获取用户输入的文件夹目录
-    directory = input("请输入文件夹目录：")
 
-    # 询问用户是否生成绝对路径
-    use_absolute_path = input("生成绝对路径(A)还是相对路径(R)？ (A/R): ").upper() == "A"
+    command_mode = False
+    directory = ''
+    use_absolute_path = False
+    output_format = "JSON"
 
-    # 询问用户选择生成JSON还是TXT
-    output_format = input("生成文件格式 (JSON/TXT): ").upper()
+    # 命令行参数获取
+    opts,args = getopt.getopt(sys.argv[1:],'cd:at',['command','directory=','absolute','txt'] )
+    for opt_name,opt_value in opts:
+        if opt_name in ('-c','--command'):
+            command_mode=True
+        if opt_name in ('-d','--directory'):
+            directory = opt_value
+        if opt_name in ('-a','--absolute'):
+            use_absolute_path=True  
+        if opt_name in ('-t','--txt'):
+            output_format = "TXT"
+
+    if command_mode != True:
+        # 获取用户输入的文件夹目录
+        directory = input("请输入文件夹目录：")
+
+        # 询问用户是否生成绝对路径
+        use_absolute_path = input("生成绝对路径(A)还是相对路径(R)？ (A/R): ").upper() == "A"
+
+        # 询问用户选择生成JSON还是TXT
+        output_format = input("生成文件格式 (JSON/TXT): ").upper()
+        
 
     # 生成文件列表及MD5值
     file_list_with_md5 = generate_file_list_with_md5(directory, use_absolute_path)
